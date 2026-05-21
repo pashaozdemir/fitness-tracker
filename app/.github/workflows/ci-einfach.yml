@@ -1,0 +1,48 @@
+# =============================================================================
+#  Einfacher CI-Workflow zum Ausprobieren.
+#  Baut die App und führt die Unit-Tests aus - mehr nicht.
+#  Läuft auf einem frischen "Empty Activity"-Projekt OHNE Extra-Plugins.
+#
+#  Diese Datei kopieren nach:  .github/workflows/ci-einfach.yml
+#  (Die größeren Workflows in .github/workflows/ erst später aktivieren,
+#   wenn ihr ktlint/detekt/jacoco eingebaut habt.)
+# =============================================================================
+
+name: CI (einfach)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-und-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo auschecken
+        uses: actions/checkout@v4
+
+      - name: JDK 17 einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Gradle einrichten (mit Cache)
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: gradlew ausführbar machen
+        run: chmod +x ./gradlew
+
+      - name: Unit-Tests ausführen
+        run: ./gradlew testDebugUnitTest
+
+      - name: Debug-APK bauen
+        run: ./gradlew assembleDebug
+
+      - name: Test-Ergebnisse hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-ergebnisse
+          path: app/build/reports/tests/
