@@ -30,6 +30,13 @@ jobs:
       - name: Debug-APK bauen
         run: ./gradlew assembleDebug
 
+      - name: APK hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+
       - name: Test-Ergebnisse hochladen
         if: always()
         uses: actions/upload-artifact@v4
