@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "254723541957",
+    "firebase_url": "https://fitnesstracker-cfd91-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "fitnesstracker-cfd91",
+    "storage_bucket": "fitnesstracker-cfd91.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254723541957:android:7feafded00b802abee59ac",
+        "android_client_info": {
+          "package_name": "at.htlgrieskirchen.fitness"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJzKBzNcBL8w63fmLnhhDa2QDhH4xNxT4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

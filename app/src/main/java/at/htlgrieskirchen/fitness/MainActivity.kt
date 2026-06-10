@@ -11,20 +11,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import at.htlgrieskirchen.fitness.data.FirestoreItemRepository
+import at.htlgrieskirchen.fitness.data.FsItem
 
-/**
- * Einfache CRUD-App zum Ausprobieren:
- *   - anzeigen (Read)
- *   - hinzufügen (Create)
- *   - ändern (Update)
- *   - löschen (Delete)
- *
- * Daten liegen nur im Speicher -> läuft sofort, kein Backend nötig.
- *
- * Einbauen: Inhalt in eure MainActivity.kt kopieren.
- * Wichtig: Beim Projekt-Anlegen als Package-Name  at.htlgrieskirchen.fitness  verwenden,
- * dann passt die package-Zeile oben automatisch.
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,20 +25,24 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** Ein Eintrag in der UI. */
-data class UiItem(val id: Int, val name: String)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemScreen() {
-    val items = remember { mutableStateListOf(UiItem(1, "Laufen"), UiItem(2, "Schwimmen")) }
-    var nextId by remember { mutableStateOf(3) }
+    val repo = remember { FirestoreItemRepository() }
+    val items = remember { mutableStateListOf<FsItem>() }
     var text by remember { mutableStateOf("") }
-    // Wenn != null, sind wir im "Ändern"-Modus für dieses Item.
-    var editId by remember { mutableStateOf<Int?>(null) }
+    var editId by remember { mutableStateOf<String?>(null) }
+
+    DisposableEffect(Unit) {
+        val registration = repo.listen { list ->
+            items.clear()
+            items.addAll(list)
+        }
+        onDispose { registration.remove() }
+    }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Meine Aktivitäten") }) }
+        topBar = { TopAppBar(title = { Text("Meine Aktivitäten (Cloud)") }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -57,7 +50,6 @@ fun ItemScreen() {
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            // Eingabefeld + Button (Add ODER Ändern)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     value = text,
@@ -71,13 +63,9 @@ fun ItemScreen() {
                         if (text.isBlank()) return@Button
                         val id = editId
                         if (id == null) {
-                            // CREATE
-                            items.add(UiItem(nextId, text.trim()))
-                            nextId++
+                            repo.add(text.trim())
                         } else {
-                            // UPDATE
-                            val index = items.indexOfFirst { it.id == id }
-                            if (index != -1) items[index] = items[index].copy(name = text.trim())
+                            repo.update(id, text.trim())
                             editId = null
                         }
                         text = ""
@@ -89,7 +77,6 @@ fun ItemScreen() {
 
             Spacer(Modifier.height(16.dp))
 
-            // Liste: pro Zeile "Ändern" und "Löschen"
             LazyColumn {
                 items(items) { item ->
                     Row(
@@ -100,13 +87,11 @@ fun ItemScreen() {
                     ) {
                         Text(item.name, modifier = Modifier.weight(1f))
                         TextButton(onClick = {
-                            // in den Ändern-Modus gehen: Text ins Feld laden
                             editId = item.id
                             text = item.name
                         }) { Text("Ändern") }
                         TextButton(onClick = {
-                            // DELETE
-                            items.removeAll { it.id == item.id }
+                            repo.delete(item.id)
                             if (editId == item.id) { editId = null; text = "" }
                         }) { Text("Löschen") }
                     }
