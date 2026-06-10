@@ -1,13 +1,3 @@
-# =============================================================================
-#  Einfacher CI-Workflow zum Ausprobieren.
-#  Baut die App und führt die Unit-Tests aus - mehr nicht.
-#  Läuft auf einem frischen "Empty Activity"-Projekt OHNE Extra-Plugins.
-#
-#  Diese Datei kopieren nach:  .github/workflows/ci-einfach.yml
-#  (Die größeren Workflows in .github/workflows/ erst später aktivieren,
-#   wenn ihr ktlint/detekt/jacoco eingebaut habt.)
-# =============================================================================
-
 name: CI (einfach)
 
 on:
@@ -39,6 +29,13 @@ jobs:
 
       - name: Debug-APK bauen
         run: ./gradlew assembleDebug
+
+      - name: APK hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
 
       - name: Test-Ergebnisse hochladen
         if: always()
